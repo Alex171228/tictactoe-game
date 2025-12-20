@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Крестики-нолики</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Экран авторизации -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-card card">
+        <h1>Крестики-нолики</h1>
+        <p class="auth-subtitle">Войдите через Telegram, чтобы получить промокод при победе ♡</p>
+        
+        <div id="telegramWidget" class="telegram-widget">
+          <script async src="https://telegram.org/js/telegram-widget.js?22"
+            data-telegram-login="YOUR_BOT_USERNAME"
+            data-size="large"
+            data-radius="14"
+            data-onauth="onTelegramAuth(user)"
+            data-request-access="write">
+          </script>
+        </div>
+        
+        <p class="auth-hint">Нажмите кнопку выше для входа</p>
+      </div>
+    </div>
+
+    <!-- Игровой экран (скрыт до авторизации) -->
+    <div id="gameScreen" class="game-screen" hidden>
+      <header class="header">
+        <h1>Крестики-нолики</h1>
+        <p class="subtitle">Выиграйте и получите подарок ♡</p>
+        <div class="user-info" id="userInfo"></div>
+      </header>
+
+      <main class="main">
+      <section class="game-panel card">
+        <div class="status-row">
+          <div class="turn-indicator">
+            Сейчас ходит: <span id="currentPlayerLabel">вы</span>
+          </div>
+          <button id="resetBtn" class="btn-secondary">Новая игра</button>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="score-row">
+          <div class="score-item"><span>Мои победы</span><strong id="playerWins">0</strong></div>
+          <div class="score-item"><span>Победы соперника</span><strong id="computerWins">0</strong></div>
+          <div class="score-item"><span>Ничьи</span><strong id="draws">0</strong></div>
+        </div>
+      </section>
+
+      <section class="info-panel">
+        <div class="card">
+          <h2>Условия промокода</h2>
+          <p>Обыграйте соперника и получите персональный промокод на скидку</p>
+        </div>
+
+        <div class="card promo-card" id="promoCard" hidden>
+          <h2>Ваш подарок</h2>
+          <p class="promo-code" id="promoCode"></p>
+        </div>
+
+        <div class="card message-card" id="messageCard" hidden>
+          <div class="cat-container" id="catContainer"></div>
+          <p id="messageText"></p>
+          <p class="cat-message" id="catMessage"></p>
+          <button id="playAgainBtn" class="btn-primary" hidden>Попробовать снова</button>
+        </div>
+      </section>
+    </main>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
