@@ -310,8 +310,6 @@ sudo systemctl enable --now tictactoe-web
 sudo systemctl enable --now tictactoe-bot
 ```
 
-> **Примечание:** привязка к порту 443 обычно требует root или CAP_NET_BIND_SERVICE.
-
 ## API документация
 
 ### POST /api/auth/code
