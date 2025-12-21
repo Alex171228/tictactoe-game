@@ -1,3 +1,558 @@
+# TicTacToe with Telegram Authentication
+
+Web application for playing tic-tac-toe with Telegram integration. Implements Telegram authentication system, promo code distribution, and game AI opponent.
+
+## Table of Contents
+
+- [Description](#description)
+- [Technology Stack](#technology-stack)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Telegram Bot Setup](#telegram-bot-setup)
+- [Environment Variables](#environment-variables)
+- [Server Deployment](#server-deployment)
+- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [Design Guidelines](#design-guidelines)
+- [Development](#development)
+
+## Description
+
+Web application for playing tic-tac-toe with Telegram integration. Supports authentication via Telegram Web App and authorization code. When a user wins, a promo code is generated and sent via Telegram API.
+
+### Key Features
+
+- Telegram authentication (Web App or code)
+- Game against AI with minimax algorithm
+- Promo code system
+- Game statistics tracking
+- Animated mascot
+- Responsive design
+- Authentication with temporary codes
+
+## Technology Stack
+
+### Frontend
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Wouter
+- TanStack Query
+- Framer Motion
+
+### Backend
+- Express.js + TypeScript
+- WebSocket (ws)
+- In-memory storage
+
+### Telegram Bot
+- node-telegram-bot-api
+
+## Features
+
+### Game Logic
+- Minimax algorithm with alpha-beta pruning for optimal AI gameplay
+- AI error probability: 30%
+- Win condition checking
+- Draw state handling
+
+### Authentication
+- Telegram Web App: automatic login when opened from Telegram
+- Authorization code: login via regular browser
+- Demo mode: testing without Telegram
+
+### Promo Code System
+- Automatic promo code generation on user victory
+- Limitation: one promo code per user
+- Promo code delivery via Telegram API
+- Administrator notifications about game results
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone <repository-url>
+cd tictactoe-game-main
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Fill in the required variables (see [Environment Variables](#environment-variables) section).
+
+### 3. Run in Development Mode
+
+```bash
+# Start dev server (frontend + backend)
+npm run dev
+
+# In another terminal - start Telegram bot
+npm run bot
+```
+
+The application will be available at `http://localhost:5000` (or the port from `PORT` in `.env`).
+
+### 4. Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Telegram Bot Setup
+
+### Option 1: Telegram Web App
+
+Configure menu button in bot to open site from Telegram:
+
+1. In @BotFather, select your bot
+2. Bot Settings → Menu Button → Edit Menu Button
+3. Enter button text: `Play`
+4. Enter URL: `https://your-domain.com`
+
+Advantages:
+- Automatic authentication without code
+- Immediate operation
+- Minimal configuration
+
+### Option 2: Authorization Code
+
+Login via regular browser requires an authorization code.
+
+#### Bot Configuration
+
+The project includes `bot.cjs` script for generating authorization codes.
+
+**On Server:**
+
+1. Ensure dependencies are installed:
+   ```bash
+   npm install
+   ```
+
+2. Verify that `.env` contains bot token:
+   ```bash
+   # Should be: TELEGRAM_BOT_TOKEN=your_token
+   ```
+
+3. Start bot via PM2:
+   ```bash
+   pm2 start bot.cjs --name "telegram-bot" --interpreter node
+   pm2 save
+   ```
+
+4. Check status:
+   ```bash
+   pm2 status
+   pm2 logs telegram-bot
+   ```
+
+**Locally (for testing):**
+
+```bash
+npm run bot
+```
+
+The bot performs the following functions:
+- Handles `/start` command with instructions
+- Generates and sends authorization code to user
+- Calls API to create authorization code
+
+### Recommendations
+
+It is recommended to use both authentication methods:
+1. Telegram Web App — for users opening site from Telegram
+2. Authorization code — for users opening site in browser
+
+This ensures support for all usage scenarios.
+
+## Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+### Required
+
+```env
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+SITE_URL=https://your-domain.com
+
+# Security
+AUTH_BOT_SECRET=your_secret_key_here
+```
+
+### Optional
+
+```env
+# Server
+PORT=5000
+NODE_ENV=production
+
+# Telegram notifications
+TELEGRAM_CHAT_ID=your_chat_id_for_admin_notifications
+
+# Authentication
+AUTH_CODE_TTL_SECONDS=300
+
+# HTTPS (for production)
+SSL_CERT_PATH=/path/to/cert.pem
+SSL_KEY_PATH=/path/to/key.pem
+SSL_CA_PATH=/path/to/ca.pem
+
+# Frontend
+VITE_TELEGRAM_BOT_USERNAME=your_bot_username
+```
+
+### Variable Descriptions
+
+- `TELEGRAM_BOT_TOKEN` — bot token from @BotFather
+- `SITE_URL` — your site URL (for link generation)
+- `AUTH_BOT_SECRET` — secret key for API protection from bot (must match in bot and server)
+- `PORT` — server port (default: 5000)
+- `TELEGRAM_CHAT_ID` — chat ID for sending administrator notifications
+- `AUTH_CODE_TTL_SECONDS` — authorization code lifetime in seconds (default: 300)
+- `SSL_*` — paths to SSL certificates for HTTPS
+- `VITE_TELEGRAM_BOT_USERNAME` — bot username (without @) for UI display
+
+## Server Deployment
+
+### Deployment on Ubuntu (HTTPS on port 443)
+
+#### 1. Install Node.js (18+)
+
+Install Node.js version 18 or higher. It is recommended to use nvm or NodeSource:
+- https://github.com/nodesource/distributions
+
+#### 2. Install Dependencies
+
+```bash
+npm ci
+npm run build
+```
+
+#### 3. Create .env
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Configure the following variables:
+- `PORT=443`
+- `SSL_CERT_PATH`, `SSL_KEY_PATH` (Cloudflare Origin cert or Let's Encrypt)
+- `TELEGRAM_BOT_TOKEN`
+- `SITE_URL=https://your-domain.com`
+- `AUTH_BOT_SECRET` (must match the key in bot)
+
+#### 4. Manual Start
+
+Web server (one terminal):
+```bash
+npm start
+```
+
+Telegram bot (another terminal):
+```bash
+npm run bot
+```
+
+#### 5. Start with systemd (recommended)
+
+Create `/etc/systemd/system/tictactoe-web.service`:
+
+```ini
+[Unit]
+Description=TicTacToe Web
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/tictactoe-game
+EnvironmentFile=/opt/tictactoe-game/.env
+ExecStart=/usr/bin/node /opt/tictactoe-game/dist/index.cjs
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Create `/etc/systemd/system/tictactoe-bot.service`:
+
+```ini
+[Unit]
+Description=TicTacToe Telegram Bot
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/tictactoe-game
+EnvironmentFile=/opt/tictactoe-game/.env
+ExecStart=/usr/bin/node /opt/tictactoe-game/bot.cjs
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable services:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now tictactoe-web
+sudo systemctl enable --now tictactoe-bot
+```
+
+> **Note:** binding to port 443 typically requires root or CAP_NET_BIND_SERVICE.
+
+## API Documentation
+
+### POST /api/auth/code
+
+Create authorization code (called by bot).
+
+**Headers:**
+```
+X-Bot-Secret: <AUTH_BOT_SECRET>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "telegramId": 123456789,
+  "firstName": "Name",
+  "lastName": "Surname",
+  "username": "username",
+  "photoUrl": "https://..."
+}
+```
+
+**Response:**
+```json
+{
+  "code": "123456"
+}
+```
+
+### POST /api/auth/verify
+
+Verify authorization code.
+
+**Request Body:**
+```json
+{
+  "code": "123456"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "id": 123456789,
+    "first_name": "Name",
+    "last_name": "Surname",
+    "username": "username",
+    "photo_url": "https://...",
+    "auth_date": 1234567890,
+    "hash": "auth_123456"
+  }
+}
+```
+
+Or if code is invalid/expired:
+```json
+{
+  "user": null
+}
+```
+
+### POST /api/result
+
+Submit game result.
+
+**Request Body:**
+```json
+{
+  "result": "win" | "lose" | "draw",
+  "telegramId": 123456789,
+  "firstName": "Name"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "ok" | "error",
+  "promoCode": "12345" | null,
+  "alreadyHasPromo": false
+}
+```
+
+## Project Structure
+
+```
+tictactoe-game-main/
+├── client/                 # React application
+│   ├── src/
+│   │   ├── components/     # UI components
+│   │   │   ├── auth/       # Authentication components
+│   │   │   ├── game/       # Game components
+│   │   │   ├── layout/     # Layout components
+│   │   │   └── ui/         # Base UI components (shadcn/ui)
+│   │   ├── pages/          # Application pages
+│   │   ├── lib/            # Utilities and logic
+│   │   │   ├── auth-context.tsx
+│   │   │   ├── game-logic.ts
+│   │   │   └── queryClient.ts
+│   │   └── hooks/          # React hooks
+│   ├── index.html
+│   └── public/             # Static files
+├── server/                 # Express server
+│   ├── index.ts           # Server entry point
+│   ├── routes.ts          # API routes
+│   ├── static.ts          # Static files
+│   └── vite.ts            # Vite middleware (dev)
+├── shared/                 # Shared types and schemas
+│   └── schema.ts
+├── script/                 # Build scripts
+│   └── build.ts
+├── bot.cjs                 # Telegram bot
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── tailwind.config.ts
+```
+
+## Design Guidelines
+
+### Design Approach
+
+Custom aesthetic with pastel color palette and animated mascot.
+
+### Design Principles
+
+- Pastel color palette
+- Serif typography for headings
+- Animated feedback system via mascot
+- Mobile-first approach with desktop adaptation
+
+### Typography
+
+**Font Families:**
+- Headings: 'Cormorant Garamond', Georgia, serif
+- Body/UI: 'Nunito', sans-serif
+- Game marks (X/O): 'Cormorant Garamond'
+
+**Type Scale:**
+- H1: 2.5rem desktop, 1.8rem mobile
+- H2: 1.25rem desktop, 1.1rem mobile
+- Body: 0.95rem desktop, 0.85rem mobile
+- Use `clamp()` for fluid responsive scaling
+
+### Color Palette
+
+Pastel pink and beige tones with green accents for success states.
+
+### Animations
+
+**Mascot Animations:**
+- Win: bounce entry + continuous wiggle
+- Lose: fade-up appearance
+- Draw: tilt animation
+- Duration: 0.5-0.6s for entries, 2s for loops
+
+**Game Interactions:**
+- Cell click: scale animation (0.8 → 1.1 → 1.0)
+- Button hover: translateY(-2px) + shadow enhancement
+- Transitions: 0.25s for all interactive elements
+
+**Restraint:** Animations are used minimally, without excessive motion.
+
+### Responsiveness
+
+**Mobile (< 640px):**
+- Single column layout
+- Board scales to fit width (max 280px)
+- Full-width cards
+- Reduced spacing
+
+**Desktop (≥ 640px):**
+- Two-column layout (game panel | info panel)
+- Fixed max widths for optimal proportions
+- Increased padding and gaps
+
+**Landscape Mobile (height < 600px):**
+- Compressed vertical spacing
+- Hide subtitle
+- Smaller board (180px max)
+- Reduced padding
+
+### UX Patterns
+
+- Session Persistence: LocalStorage for saving login state
+- Emotional Feedback: Mascot provides visual feedback on game results
+- Progressive Disclosure: Transition from authentication screen to game screen
+- Instant Feedback: Animations confirm user actions
+- Clear State Communication: Turn indicator, disabled states, game-over messages
+
+## Development
+
+### Available Commands
+
+```bash
+# Development
+npm run dev          # Start dev server (frontend + backend)
+
+# Telegram bot
+npm run bot          # Start Telegram bot
+
+# Build
+npm run build        # Build for production
+npm start            # Start production build
+
+# Type checking
+npm run check        # TypeScript type checking
+
+# Database (if used)
+npm run db:push      # Apply migrations
+```
+
+### Component Structure
+
+- `client/src/components/auth/` — authentication components
+- `client/src/components/game/` — game components (board, score, messages)
+- `client/src/components/layout/` — layout components (header)
+- `client/src/components/ui/` — base UI components (shadcn/ui)
+
+### Game Logic
+
+Main game logic is located in `client/src/lib/game-logic.ts`:
+- `checkWinner()` — winner checking
+- `findBestMove()` — optimal move search for AI (minimax algorithm)
+- `CATS` — mascot data
+
+### Authentication
+
+Authentication system:
+- LocalStorage for session persistence
+- Telegram Web App API for automatic login
+- Temporary authorization codes (stored in memory, TTL 5 minutes)
+
+## License
+
+MIT
+
+---
+
 # Крестики-Нолики с Telegram Authentication
 
 Веб-приложение для игры в крестики-нолики с интеграцией Telegram. Реализована система авторизации через Telegram, выдача промокодов и игровой ИИ-противник.
@@ -11,10 +566,10 @@
 - [Настройка Telegram бота](#настройка-telegram-бота)
 - [Переменные окружения](#переменные-окружения)
 - [Деплой на сервер](#деплой-на-сервер)
-- [API документация](#api-документация)
-- [Структура проекта](#структура-проекта)
-- [Дизайн-гайдлайны](#дизайн-гайдлайны)
-- [Разработка](#разработка)
+- [API документация](#api-документация-1)
+- [Структура проекта](#структура-проекта-1)
+- [Дизайн-гайдлайны](#дизайн-гайдлайны-1)
+- [Разработка](#разработка-1)
 
 ## Описание
 
@@ -310,6 +865,8 @@ sudo systemctl enable --now tictactoe-web
 sudo systemctl enable --now tictactoe-bot
 ```
 
+> **Примечание:** привязка к порту 443 обычно требует root или CAP_NET_BIND_SERVICE.
+
 ## API документация
 
 ### POST /api/auth/code
@@ -548,4 +1105,3 @@ npm run db:push      # Применить миграции
 ## Лицензия
 
 MIT
-
