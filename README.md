@@ -1,5 +1,12 @@
 # TicTacToe with Telegram Authentication
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+
 Web application for playing tic-tac-toe with Telegram integration. Implements Telegram authentication system, promo code distribution, and game AI opponent.
 
 ## Table of Contents
@@ -554,6 +561,13 @@ MIT
 ---
 
 # Крестики-Нолики с Telegram Authentication
+
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
 
 Веб-приложение для игры в крестики-нолики с интеграцией Telegram. Реализована система авторизации через Telegram, выдача промокодов и игровой ИИ-противник.
 
